@@ -2,41 +2,47 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:silvia_cpal_test/features/cpal/models/cpal_model.dart';
 
 class RecordProvider with ChangeNotifier {
-  List<Map<DateTime, List<double>>> _recordList = [];
-  List<Map<DateTime, List<double>>> get recordList => _recordList;
+  final List<CpalTest> _recordList = [];
+  List<CpalTest> get recordList => _recordList;
 
-  void saveRecord(List<double> recordList) async {
+  void saveRecord({
+    required List<double> recordList,
+    required int wrongCount,
+    required int correctCount,
+  }) async {
     DateTime now = DateTime.now();
-    _recordList.add({now: recordList});
+    _recordList.add(
+      CpalTest(
+        testTime: now,
+        recordList: recordList,
+        correctCount: correctCount,
+        wrongCount: wrongCount,
+      ),
+    );
 
     final prefs = await SharedPreferences.getInstance();
 
-    List<Map<String, List<double>>> jsonCompatibleList =
-        _recordList.map((dateMap) {
-      return dateMap
-          .map((key, value) => MapEntry(key.toIso8601String(), value));
-    }).toList();
-
-    String jsonString = jsonEncode(jsonCompatibleList);
-    await prefs.setString('record_list', jsonString);
+    final List<String> testListString =
+        _recordList.map((test) => jsonEncode(test.toMap())).toList();
+    await prefs.setStringList('cpalTestList', testListString);
   }
 
-  Future<List<Map<DateTime, List<double>>>> loadRecordList() async {
+  void loadCpalTestList() async {
     final prefs = await SharedPreferences.getInstance();
+    final List<String>? testListString = prefs.getStringList('cpalTestList');
 
-    String? jsonString = prefs.getString('record_list');
-    if (jsonString == null) return [];
+    if (testListString == null) return;
 
-    List<dynamic> jsonDecoded = jsonDecode(jsonString);
+    List<CpalTest> loadRecordList = testListString
+        .map((value) => CpalTest.fromMap(jsonDecode(value)))
+        .toList();
 
-    List<Map<DateTime, List<double>>> recordList = jsonDecoded.map((map) {
-      Map<String, List<double>> stringMap = Map<String, List<double>>.from(map);
-      return stringMap
-          .map((key, value) => MapEntry(DateTime.parse(key), value));
-    }).toList();
+    _recordList.clear();
+    _recordList.addAll(loadRecordList);
 
-    return recordList;
+    notifyListeners();
   }
 }

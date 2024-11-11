@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:silvia_cpal_test/features/cpal/presentation/pages/random_test_page.dart';
-import 'package:silvia_cpal_test/features/cpal/presentation/pages/test_card_page.dart';
 import 'package:silvia_cpal_test/features/cpal/presentation/pages/test_page.dart';
 import 'package:silvia_cpal_test/shared/widgets/primary_button.dart';
 

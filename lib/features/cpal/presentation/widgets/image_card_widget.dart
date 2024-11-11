@@ -24,7 +24,9 @@ class _ImageCardState extends State<ImageCard> with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _flipAnimation;
   late CpalProvider _cpalProvider;
+
   bool _isAnswer = false;
+  bool _isWrong = false;
 
   @override
   void initState() {
@@ -59,31 +61,50 @@ class _ImageCardState extends State<ImageCard> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        print(_cpalProvider.isFlipedCard);
+
         if (widget.isAnswerCard ||
+            _cpalProvider.isFlipedCard ||
             _cpalProvider.isShowAnswer ||
             !_cpalProvider.isStarted) return;
-
-        _controller.forward();
 
         if (_controller.isCompleted) {
           _controller.reverse();
         } else {
-          _controller.forward();
+          _cpalProvider.onFlipCard(true);
+
           if (_cpalProvider.answerImage == widget.imageAssetUrl) {
-            setState(() {
-              _isAnswer = true;
+            _controller.forward().then((_) {
+              setState(() {
+                _isAnswer = true;
+              });
             });
+
             _cpalProvider.onCorrect();
             Future.delayed(const Duration(seconds: 3), () {
+              _cpalProvider.getAnswerImage();
+              _cpalProvider.onFlipCard(false);
+              _controller.reverse();
+
               setState(() {
                 _isAnswer = false;
               });
-              _controller.reverse();
-              _cpalProvider.getAnswerImage();
             });
           } else {
-            Future.delayed(const Duration(seconds: 1), () {
-              _controller.reverse();
+            _controller.forward().then((_) {
+              setState(() {
+                _isWrong = true;
+              });
+            });
+
+            _cpalProvider.onWrong();
+            Future.delayed(const Duration(seconds: 2), () {
+              setState(() {
+                _isWrong = false;
+              });
+              _controller.reverse().then((_) {
+                _cpalProvider.onFlipCard(false);
+              });
             });
           }
         }
@@ -100,12 +121,14 @@ class _ImageCardState extends State<ImageCard> with TickerProviderStateMixin {
                       ? ColorTheme.of(context).background.normal.normal
                       : null,
                   borderRadius: BorderRadius.circular(4),
-                  border: widget.isAnswerCard || _isAnswer
+                  border: widget.isAnswerCard || _isAnswer || _isWrong
                       ? Border.all(
-                          color: ColorTheme.of(context)
-                              .primary
-                              .normal
-                              .withOpacity(0.7),
+                          color: _isWrong
+                              ? ColorTheme.of(context).status.destructive
+                              : ColorTheme.of(context)
+                                  .primary
+                                  .normal
+                                  .withOpacity(0.7),
                         )
                       : null,
                   boxShadow: [

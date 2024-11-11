@@ -25,7 +25,11 @@ class TestPage extends StatelessWidget {
     RecordProvider recordProvider = context.read<RecordProvider>();
 
     if (cpalProvider.isDone) {
-      recordProvider.saveRecord(cpalProvider.recordTimeList);
+      recordProvider.saveRecord(
+        recordList: cpalProvider.recordTimeList,
+        wrongCount: cpalProvider.wrongCount,
+        correctCount: cpalProvider.correctCount,
+      );
     }
 
     return Scaffold(

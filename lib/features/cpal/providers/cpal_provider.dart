@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:rive/rive.dart';
 
 class CpalProvider extends ChangeNotifier {
   List<String> imageList = [
@@ -13,16 +12,25 @@ class CpalProvider extends ChangeNotifier {
     "assets/icons/Pear.svg",
     "assets/icons/Orange.svg",
   ];
-  int showAnswerSecond = 2;
+  int showAnswerSecond = 5;
 
   List<String> _selectableImageList = [];
   List<String> get selectableImageList => _selectableImageList;
 
-  final List<String> _errorImageList = [];
-  List<String> get errorImageList => _errorImageList;
+  int _wrongCount = 0;
+  int get wrongCount => _wrongCount;
+
+  int _correctCount = 0;
+  int get correctCount => _correctCount;
 
   bool _isStarted = false;
   bool get isStarted => _isStarted;
+
+  bool _isFlipedCard = false;
+  bool get isFlipedCard => _isFlipedCard;
+
+  bool _isFlipedWrongCard = false;
+  bool get isFlipedWrongCard => _isFlipedWrongCard;
 
   bool _isShowAnswer = false;
   bool get isShowAnswer => _isShowAnswer;
@@ -74,6 +82,15 @@ class CpalProvider extends ChangeNotifier {
     });
   }
 
+  void onFlipCard(bool isFlip) {
+    _isFlipedCard = isFlip;
+  }
+
+  void onWrong() {
+    _isFlipedWrongCard = true;
+    _wrongCount++;
+  }
+
   void onCorrect() {
     DateTime now = DateTime.now();
 
@@ -81,39 +98,6 @@ class CpalProvider extends ChangeNotifier {
     _recordTimeList.add(elapsedTime);
 
     _selectableImageList.remove(_answerImage);
-  }
-
-  final RiveAnimationController controller = SimpleAnimation(
-    'show',
-    autoplay: false,
-  );
-
-  void playAnimation() {
-    controller.isActive = true;
-    notifyListeners();
-  }
-
-  void stopAnimation() {
-    controller.isActive = false;
-    notifyListeners();
+    _correctCount++;
   }
 }
-
-// List<String> totalImageList = [
-//   "assets/icons/Avocado.svg",
-//   "assets/icons/Carrot.svg",
-//   "assets/icons/Coconut_cut.svg",
-//   "assets/icons/Eggplant.svg",
-//   "assets/icons/Lemon.svg",
-//   "assets/icons/Orange.svg",
-//   "assets/icons/Peach.svg",
-//   "assets/icons/Pear.svg",
-//   "assets/icons/Pepper.svg",
-//   "assets/icons/Pomegranate.svg",
-//   "assets/icons/Potato.svg",
-//   "assets/icons/Red_Apple.svg",
-//   "assets/icons/Red_onion.svg",
-//   "assets/icons/Tomato.svg",
-//   "assets/icons/Corn.svg",
-//   "assets/icons/Cucumber.svg",
-// ];

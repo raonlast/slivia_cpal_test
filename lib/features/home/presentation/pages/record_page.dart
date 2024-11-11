@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:silvia_cpal_test/features/cpal/models/cpal_model.dart';
 import 'package:silvia_cpal_test/shared/providers/record_provider.dart';
 import 'package:silvia_cpal_test/themes/colors/color_theme.dart';
 import 'package:silvia_cpal_test/themes/texts/text_style.dart';
@@ -12,6 +13,29 @@ class RecordPage extends StatefulWidget {
 }
 
 class _RecordPageState extends State<RecordPage> {
+  String calculateAverage(List<double> numbers) {
+    if (numbers.isEmpty) return "0.000";
+
+    double sum = numbers.reduce((a, b) => a + b);
+    double average = sum / numbers.length;
+
+    return average.toStringAsFixed(3);
+  }
+
+  String calculateCorrectRate(int correctCount, int wrongCount) {
+    int totalCount = correctCount + wrongCount;
+    if (totalCount == 0) return "0.0";
+
+    double correctRate = (correctCount / totalCount) * 100;
+    return double.parse(correctRate.toStringAsFixed(2)).toString();
+  }
+
+  @override
+  void initState() {
+    context.read<RecordProvider>().loadCpalTestList();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     RecordProvider recordProvider = context.read<RecordProvider>();
@@ -22,8 +46,7 @@ class _RecordPageState extends State<RecordPage> {
         return const SizedBox(height: 16);
       },
       itemBuilder: (context, index) {
-        final Map<DateTime, List<double>> item =
-            recordProvider.recordList[index];
+        final CpalTest item = recordProvider.recordList[index];
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -37,14 +60,14 @@ class _RecordPageState extends State<RecordPage> {
             child: Column(
               children: [
                 Text(
-                  datetimeToStringForYmd(item.keys.first),
+                  datetimeToStringForYmd(item.testTime),
                   style: CustomTextStyle.of().subTitle,
                 ),
                 const SizedBox(height: 16),
                 ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: item.values.first.length,
+                  itemCount: item.recordList.length,
                   separatorBuilder: (context, index) {
                     return Divider(
                       thickness: 1,
@@ -60,18 +83,46 @@ class _RecordPageState extends State<RecordPage> {
                           style: CustomTextStyle.of().body2,
                         ),
                         Text(
-                          "${item.values.first[index].toString()}s",
+                          "${item.recordList[index].toString()}s",
                           style: CustomTextStyle.of().body2,
                         ),
                       ],
                     );
                   },
                 ),
-                // ...item.values.first.map((times) {
-                //   return Row(
-                //     children: [],
-                //   );
-                // })
+                const SizedBox(height: 8),
+                Divider(
+                  thickness: 2,
+                  color: ColorTheme.of(context).line.alternative,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "기록 평균",
+                      style: CustomTextStyle.of().body1,
+                    ),
+                    Text(
+                      calculateAverage(item.recordList).toString(),
+                      style: CustomTextStyle.of().body1,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "정답률",
+                      style: CustomTextStyle.of().body1,
+                    ),
+                    Text(
+                      "${calculateCorrectRate(item.correctCount, item.wrongCount)}%",
+                      style: CustomTextStyle.of().body1,
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
