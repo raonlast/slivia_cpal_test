@@ -23,12 +23,15 @@ class RecordProvider with ChangeNotifier {
 
     final List<String> testListString =
         _recordList.map((test) => jsonEncode(test.toMap())).toList();
+
     await prefs.setStringList('cpalTestList', testListString);
   }
 
   void loadCpalTestList() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String>? testListString = prefs.getStringList('cpalTestList');
+
+    print(testListString);
 
     if (testListString == null) return;
 

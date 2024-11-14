@@ -38,7 +38,7 @@ class _RecordPageState extends State<RecordPage> {
 
   @override
   Widget build(BuildContext context) {
-    RecordProvider recordProvider = context.read<RecordProvider>();
+    RecordProvider recordProvider = context.watch<RecordProvider>();
 
     return ListView.separated(
       itemCount: recordProvider.recordList.length,

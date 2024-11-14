@@ -46,60 +46,63 @@ class _ImageCardState extends State<ImageCard> with TickerProviderStateMixin {
 
   @override
   void didChangeDependencies() {
+    super.didChangeDependencies();
     _cpalProvider = context.watch<CpalProvider>();
+    _toggleFlip(_cpalProvider.isShowAnswer);
+  }
 
-    if (_cpalProvider.isShowAnswer) {
+  void _toggleFlip(bool shouldShowAnswer) {
+    if (shouldShowAnswer) {
       _controller.forward();
     } else {
       _controller.reverse();
     }
+  }
 
-    super.didChangeDependencies();
+  void _handleCorrectAnswer() {
+    _controller.forward().then((_) {
+      setState(() => _isAnswer = true);
+    });
+    _cpalProvider.onCorrect();
+
+    Future.delayed(const Duration(seconds: 3), () {
+      _cpalProvider.getAnswerImage();
+      _cpalProvider.onFlipCard(false);
+      _controller.reverse().then((_) {
+        setState(() => _isAnswer = false);
+      });
+    });
+  }
+
+  void _handleWrongAnswer() {
+    _controller.forward().then((_) {
+      setState(() => _isWrong = true);
+    });
+    _cpalProvider.onWrong();
+
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() => _isWrong = false);
+      _controller.reverse().then((_) {
+        _cpalProvider.onFlipCard(false);
+      });
+    });
+  }
+
+  void _onTapCard() {
+    if (widget.isAnswerCard || _cpalProvider.canFlip()) return;
+
+    _cpalProvider.onFlipCard(true);
+    if (_cpalProvider.answerImage == widget.imageAssetUrl) {
+      _handleCorrectAnswer();
+    } else {
+      _handleWrongAnswer();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        if (widget.isAnswerCard || _cpalProvider.canFlip()) return;
-
-        _cpalProvider.onFlipCard(true);
-
-        if (_cpalProvider.answerImage == widget.imageAssetUrl) {
-          _controller.forward().then((_) {
-            setState(() {
-              _isAnswer = true;
-            });
-          });
-
-          _cpalProvider.onCorrect();
-          Future.delayed(const Duration(seconds: 3), () {
-            _cpalProvider.getAnswerImage();
-            _cpalProvider.onFlipCard(false);
-            _controller.reverse();
-
-            setState(() {
-              _isAnswer = false;
-            });
-          });
-        } else {
-          _controller.forward().then((_) {
-            setState(() {
-              _isWrong = true;
-            });
-          });
-
-          _cpalProvider.onWrong();
-          Future.delayed(const Duration(seconds: 2), () {
-            setState(() {
-              _isWrong = false;
-            });
-            _controller.reverse().then((_) {
-              _cpalProvider.onFlipCard(false);
-            });
-          });
-        }
-      },
+      onTap: _onTapCard,
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
@@ -107,54 +110,54 @@ class _ImageCardState extends State<ImageCard> with TickerProviderStateMixin {
             transform: Matrix4.rotationY(_flipAnimation.value),
             alignment: Alignment.center,
             child: Container(
-                decoration: BoxDecoration(
-                  color: _cpalProvider.isShowAnswer
-                      ? ColorTheme.of(context).background.normal.normal
-                      : null,
-                  borderRadius: BorderRadius.circular(4),
-                  border: widget.isAnswerCard || _isAnswer || _isWrong
-                      ? Border.all(
-                          color: _isWrong
-                              ? ColorTheme.of(context).status.destructive
-                              : ColorTheme.of(context)
-                                  .primary
-                                  .normal
-                                  .withOpacity(0.7),
-                        )
-                      : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color:
-                          ColorTheme.of(context).static.black.withOpacity(0.1),
-                      offset: const Offset(0, 4),
-                      blurRadius: 16,
-                    ),
-                  ],
-                ),
-                child: _flipAnimation.value > 1.57 || widget.isAnswerCard
-                    ? Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SvgPicture.asset(
-                            'assets/icons/Card_front.svg',
-                            width: 80,
-                            height: 100,
-                          ),
-                          Transform.flip(
-                            flipX: widget.isAnswerCard,
-                            child: SvgPicture.asset(
-                              widget.imageAssetUrl,
-                              width: 68,
-                              height: 68,
-                            ),
-                          )
-                        ],
+              decoration: BoxDecoration(
+                color: _cpalProvider.isShowAnswer
+                    ? ColorTheme.of(context).background.normal.normal
+                    : null,
+                borderRadius: BorderRadius.circular(4),
+                border: widget.isAnswerCard || _isAnswer || _isWrong
+                    ? Border.all(
+                        color: _isWrong
+                            ? ColorTheme.of(context).status.destructive
+                            : ColorTheme.of(context)
+                                .primary
+                                .normal
+                                .withOpacity(0.7),
                       )
-                    : SvgPicture.asset(
-                        'assets/icons/Card_back.svg',
-                        width: 80,
-                        height: 100,
-                      )),
+                    : null,
+                boxShadow: [
+                  BoxShadow(
+                    color: ColorTheme.of(context).static.black.withOpacity(0.1),
+                    offset: const Offset(0, 4),
+                    blurRadius: 16,
+                  ),
+                ],
+              ),
+              child: _flipAnimation.value > 1.57 || widget.isAnswerCard
+                  ? Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/Card_front.svg',
+                          width: 80,
+                          height: 100,
+                        ),
+                        Transform.flip(
+                          flipX: widget.isAnswerCard,
+                          child: SvgPicture.asset(
+                            widget.imageAssetUrl,
+                            width: 68,
+                            height: 68,
+                          ),
+                        ),
+                      ],
+                    )
+                  : SvgPicture.asset(
+                      'assets/icons/Card_back.svg',
+                      width: 80,
+                      height: 100,
+                    ),
+            ),
           );
         },
       ),
