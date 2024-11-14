@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:silvia_cpal_test/features/cpal/constants/cpal_constant.dart';
 import 'package:silvia_cpal_test/features/cpal/presentation/widgets/image_card_widget.dart';
 import 'package:silvia_cpal_test/features/cpal/presentation/widgets/progress_bar_widget.dart';
 import 'package:silvia_cpal_test/features/cpal/providers/cpal_provider.dart';
@@ -7,17 +8,17 @@ import 'package:silvia_cpal_test/shared/providers/record_provider.dart';
 import 'package:silvia_cpal_test/shared/widgets/primary_button.dart';
 import 'package:silvia_cpal_test/themes/colors/color_theme.dart';
 
-class TestPage extends StatelessWidget {
+class CpalTestPage extends StatelessWidget {
   static Route<void> route() {
     return MaterialPageRoute(
       builder: (_) => ChangeNotifierProvider(
         create: (_) => CpalProvider(),
-        child: const TestPage(),
+        child: const CpalTestPage(),
       ),
     );
   }
 
-  const TestPage({super.key});
+  const CpalTestPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,11 +26,7 @@ class TestPage extends StatelessWidget {
     RecordProvider recordProvider = context.read<RecordProvider>();
 
     if (cpalProvider.isDone) {
-      recordProvider.saveRecord(
-        recordList: cpalProvider.recordTimeList,
-        wrongCount: cpalProvider.wrongCount,
-        correctCount: cpalProvider.correctCount,
-      );
+      recordProvider.saveRecord(cpalTest: cpalProvider.cpalTest);
     }
 
     return Scaffold(
@@ -62,7 +59,7 @@ class TestPage extends StatelessWidget {
                             children: List.generate(2, (colIndex) {
                               int imageIndex = rowIndex * 2 + colIndex;
                               String imageAssetUrl =
-                                  cpalProvider.imageList[imageIndex];
+                                  CpalConstant.imageList[imageIndex];
 
                               return ImageCard(
                                 imageAssetUrl: imageAssetUrl,

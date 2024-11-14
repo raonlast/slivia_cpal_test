@@ -8,18 +8,14 @@ class RecordProvider with ChangeNotifier {
   final List<CpalTest> _recordList = [];
   List<CpalTest> get recordList => _recordList;
 
-  void saveRecord({
-    required List<double> recordList,
-    required int wrongCount,
-    required int correctCount,
-  }) async {
+  void saveRecord({required CpalTest cpalTest}) async {
     DateTime now = DateTime.now();
     _recordList.add(
       CpalTest(
-        testTime: now,
-        recordList: recordList,
-        correctCount: correctCount,
-        wrongCount: wrongCount,
+        testStartTime: now,
+        recordList: cpalTest.recordList,
+        correctCount: cpalTest.correctCount,
+        wrongCount: cpalTest.wrongCount,
       ),
     );
 

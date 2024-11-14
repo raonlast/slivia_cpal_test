@@ -1,21 +1,35 @@
 import 'dart:convert';
 
 class CpalTest {
-  final DateTime testTime;
+  final DateTime testStartTime;
   final List<double> recordList;
   final int correctCount;
   final int wrongCount;
 
   CpalTest({
-    required this.testTime,
+    required this.testStartTime,
     required this.recordList,
     required this.correctCount,
     required this.wrongCount,
   });
 
+  CpalTest copyWith({
+    DateTime? testStartTime,
+    List<double>? recordList,
+    int? correctCount,
+    int? wrongCount,
+  }) {
+    return CpalTest(
+      testStartTime: testStartTime ?? this.testStartTime,
+      recordList: recordList ?? this.recordList,
+      correctCount: correctCount ?? this.correctCount,
+      wrongCount: wrongCount ?? this.wrongCount,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
-      'testTime': testTime.toIso8601String(),
+      'testStartTime': testStartTime.toIso8601String(),
       'recordList': jsonEncode(recordList),
       'correctCount': correctCount,
       'wrongCount': wrongCount,
@@ -24,7 +38,7 @@ class CpalTest {
 
   factory CpalTest.fromMap(Map<String, dynamic> map) {
     return CpalTest(
-      testTime: DateTime.parse(map['testTime']),
+      testStartTime: DateTime.parse(map['testStartTime']),
       recordList: List<double>.from(jsonDecode(map['recordList'])),
       correctCount: map['correctCount'],
       wrongCount: map['wrongCount'],

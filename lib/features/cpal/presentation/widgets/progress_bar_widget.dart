@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:silvia_cpal_test/features/cpal/constants/cpal_constant.dart';
 import 'package:silvia_cpal_test/features/cpal/providers/cpal_provider.dart';
 import 'package:silvia_cpal_test/themes/colors/color_theme.dart';
 
@@ -22,7 +23,7 @@ class _CustomProgressBarState extends State<CustomProgressBar>
 
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: _cpalProvider.showAnswerSecond),
+      duration: const Duration(seconds: CpalConstant.cardRevealTime),
     );
 
     _animation = Tween<double>(begin: 1.0, end: 0.0).animate(

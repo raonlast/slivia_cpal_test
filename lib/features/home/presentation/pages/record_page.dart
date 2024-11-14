@@ -60,7 +60,7 @@ class _RecordPageState extends State<RecordPage> {
             child: Column(
               children: [
                 Text(
-                  datetimeToStringForYmd(item.testTime),
+                  datetimeToStringForYmd(item.testStartTime),
                   style: CustomTextStyle.of().subTitle,
                 ),
                 const SizedBox(height: 16),

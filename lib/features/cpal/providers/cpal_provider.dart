@@ -2,26 +2,15 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:silvia_cpal_test/features/cpal/constants/cpal_constant.dart';
+import 'package:silvia_cpal_test/features/cpal/models/cpal_model.dart';
 
 class CpalProvider extends ChangeNotifier {
-  List<String> imageList = [
-    "assets/icons/Avocado.svg",
-    "assets/icons/Carrot.svg",
-    "assets/icons/Peach.svg",
-    "assets/icons/Eggplant.svg",
-    "assets/icons/Pear.svg",
-    "assets/icons/Orange.svg",
-  ];
-  int showAnswerSecond = 5;
-
   List<String> _selectableImageList = [];
   List<String> get selectableImageList => _selectableImageList;
 
-  int _wrongCount = 0;
-  int get wrongCount => _wrongCount;
-
-  int _correctCount = 0;
-  int get correctCount => _correctCount;
+  late CpalTest _cpalTest;
+  CpalTest get cpalTest => _cpalTest;
 
   bool _isStarted = false;
   bool get isStarted => _isStarted;
@@ -41,11 +30,6 @@ class CpalProvider extends ChangeNotifier {
   bool _isDone = false;
   bool get isDone => _isDone;
 
-  final List<double> _recordTimeList = [];
-  List<double> get recordTimeList => _recordTimeList;
-
-  DateTime _recordStartTime = DateTime.now();
-
   void getAnswerImage() {
     if (_selectableImageList.isEmpty) {
       _answerImage = "";
@@ -60,19 +44,23 @@ class CpalProvider extends ChangeNotifier {
 
     _answerImage = _selectableImageList[answerIndex];
     notifyListeners();
-
-    _recordStartTime = DateTime.now();
   }
 
   void onStart() {
-    _selectableImageList = List.from(imageList);
-    _recordTimeList.clear();
+    _cpalTest = CpalTest(
+      testStartTime: DateTime.now(),
+      recordList: [],
+      correctCount: 0,
+      wrongCount: 0,
+    );
+
+    _selectableImageList = List.from(CpalConstant.imageList);
     _isStarted = true;
     _isShowAnswer = true;
     _isDone = false;
     notifyListeners();
 
-    Future.delayed(Duration(seconds: showAnswerSecond), () {
+    Future.delayed(const Duration(seconds: CpalConstant.cardRevealTime), () {
       _isShowAnswer = false;
       notifyListeners();
 
@@ -88,16 +76,21 @@ class CpalProvider extends ChangeNotifier {
 
   void onWrong() {
     _isFlipedWrongCard = true;
-    _wrongCount++;
+    _cpalTest = _cpalTest.copyWith(wrongCount: _cpalTest.wrongCount + 1);
   }
 
   void onCorrect() {
     DateTime now = DateTime.now();
 
-    double elapsedTime = now.difference(_recordStartTime).inMilliseconds / 1000;
-    _recordTimeList.add(elapsedTime);
+    double elapsedTime =
+        now.difference(_cpalTest.testStartTime).inMilliseconds / 1000;
+    _cpalTest.recordList.add(elapsedTime);
 
     _selectableImageList.remove(_answerImage);
-    _correctCount++;
+    _cpalTest = _cpalTest.copyWith(correctCount: _cpalTest.correctCount + 1);
+  }
+
+  bool canFlip() {
+    return _isFlipedCard || _isShowAnswer || !_isStarted;
   }
 }

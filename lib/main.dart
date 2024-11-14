@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:silvia_cpal_test/features/home/presentation/pages/home_page.dart';
+import 'package:silvia_cpal_test/features/home/presentation/pages/main_wrapper.dart';
 import 'package:silvia_cpal_test/shared/providers/record_provider.dart';
 
 void main() {
@@ -32,7 +32,7 @@ class _AppState extends State<App> {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const MainWrapper(),
     );
   }
 }

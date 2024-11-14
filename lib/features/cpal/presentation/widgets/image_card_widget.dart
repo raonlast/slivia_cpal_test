@@ -61,52 +61,43 @@ class _ImageCardState extends State<ImageCard> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        print(_cpalProvider.isFlipedCard);
+        if (widget.isAnswerCard || _cpalProvider.canFlip()) return;
 
-        if (widget.isAnswerCard ||
-            _cpalProvider.isFlipedCard ||
-            _cpalProvider.isShowAnswer ||
-            !_cpalProvider.isStarted) return;
+        _cpalProvider.onFlipCard(true);
 
-        if (_controller.isCompleted) {
-          _controller.reverse();
+        if (_cpalProvider.answerImage == widget.imageAssetUrl) {
+          _controller.forward().then((_) {
+            setState(() {
+              _isAnswer = true;
+            });
+          });
+
+          _cpalProvider.onCorrect();
+          Future.delayed(const Duration(seconds: 3), () {
+            _cpalProvider.getAnswerImage();
+            _cpalProvider.onFlipCard(false);
+            _controller.reverse();
+
+            setState(() {
+              _isAnswer = false;
+            });
+          });
         } else {
-          _cpalProvider.onFlipCard(true);
-
-          if (_cpalProvider.answerImage == widget.imageAssetUrl) {
-            _controller.forward().then((_) {
-              setState(() {
-                _isAnswer = true;
-              });
+          _controller.forward().then((_) {
+            setState(() {
+              _isWrong = true;
             });
+          });
 
-            _cpalProvider.onCorrect();
-            Future.delayed(const Duration(seconds: 3), () {
-              _cpalProvider.getAnswerImage();
+          _cpalProvider.onWrong();
+          Future.delayed(const Duration(seconds: 2), () {
+            setState(() {
+              _isWrong = false;
+            });
+            _controller.reverse().then((_) {
               _cpalProvider.onFlipCard(false);
-              _controller.reverse();
-
-              setState(() {
-                _isAnswer = false;
-              });
             });
-          } else {
-            _controller.forward().then((_) {
-              setState(() {
-                _isWrong = true;
-              });
-            });
-
-            _cpalProvider.onWrong();
-            Future.delayed(const Duration(seconds: 2), () {
-              setState(() {
-                _isWrong = false;
-              });
-              _controller.reverse().then((_) {
-                _cpalProvider.onFlipCard(false);
-              });
-            });
-          }
+          });
         }
       },
       child: AnimatedBuilder(
